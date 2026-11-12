@@ -56,6 +56,25 @@ def update_item(conn, item_id, unit, category, reorder_level):
     )
 
 
+def item_history_counts(conn, item_id):
+    """(number of purchases, number of sales) logged for an item."""
+    p = conn.execute("SELECT COUNT(*) FROM purchases WHERE item_id = ?", (item_id,)).fetchone()[0]
+    s = conn.execute("SELECT COUNT(*) FROM sales WHERE item_id = ?", (item_id,)).fetchone()[0]
+    return p, s
+
+
+def delete_item(conn, item_id):
+    """Remove an item. Refused if it has any purchases or sales, so accounts never lose history."""
+    item = get_item(conn, item_id)
+    n_p, n_s = item_history_counts(conn, item_id)
+    if n_p or n_s:
+        raise InventoryError(
+            f"'{item['name']}' has {n_p} purchase(s) and {n_s} sale(s) logged, so it can't be removed. "
+            "Delete those sales and purchases first (Warehouse page, History) if you really want it gone."
+        )
+    conn.execute("DELETE FROM items WHERE item_id = ?", (item_id,))
+
+
 def list_items(conn):
     return pd.read_sql_query("SELECT * FROM items ORDER BY name COLLATE NOCASE", conn)
 

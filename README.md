@@ -25,7 +25,7 @@ Set the `WAREHOUSE_DB` environment variable to keep the database somewhere else.
 | Profit report | Date and item filters, profit by day/week/month and by item, Excel download |
 | History | All purchases and sales, with delete for mistakes |
 
-**Add items**: create products and edit their unit, category and reorder level.
+**Add items**: create products, edit their unit, category and reorder level, or remove an item (only if it has no purchases or sales).
 
 ## Pre-filled choices
 

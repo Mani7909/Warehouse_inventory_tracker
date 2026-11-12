@@ -40,6 +40,23 @@ class LookupTests(unittest.TestCase):
             self.assertIsNone(inv.last_purchase(c, 2))
             self.assertIsNone(inv.last_sale(c, 2))
 
+    def test_delete_item(self):
+        with db.transaction(self.path) as c:
+            used = inv.add_item(c, "Used")
+            unused = inv.add_item(c, "Unused")
+            inv.add_purchase(c, used, "2026-01-01", 5, 10)
+        with self.assertRaises(inv.InventoryError):
+            with db.transaction(self.path) as c:
+                inv.delete_item(c, used)
+        with db.transaction(self.path) as c:
+            self.assertEqual(inv.item_history_counts(c, used), (1, 0))
+            inv.delete_item(c, unused)
+            names = list(inv.list_items(c)["name"])
+        self.assertEqual(names, ["Used"])
+        with self.assertRaises(inv.InventoryError):
+            with db.transaction(self.path) as c:
+                inv.delete_item(c, unused)    # already gone
+
     def test_merge_choices(self):
         self.assertEqual(merge_choices(["pcs", "kg"], ["KG", " ", "bag", "pcs"]), ["pcs", "kg", "bag"])
 

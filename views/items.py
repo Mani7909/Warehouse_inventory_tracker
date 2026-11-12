@@ -67,3 +67,26 @@ def render():
                 inv.update_item(c, int(item_id), e_unit, e_cat, e_reorder)
             flash(f"Updated '{row['name']}'.")
             st.rerun()
+
+    with st.expander("Remove an item"):
+        st.caption("Only items with no purchases or sales can be removed, so your accounts keep their history.")
+        rm_id = st.selectbox("Item to remove", options=list(names), format_func=lambda i: names[i],
+                             key="rm_item")
+        with db.transaction() as c:
+            n_p, n_s = inv.item_history_counts(c, int(rm_id))
+        if n_p or n_s:
+            st.warning(f"'{names[rm_id]}' has {n_p} purchase(s) and {n_s} sale(s) logged, "
+                       "so it can't be removed. Delete those first on the Warehouse page (History) if needed.")
+        sure = st.checkbox("Yes, remove this item", key=f"rm_ok_{rm_id}")
+        if st.button("Remove item", disabled=not sure or bool(n_p or n_s)):
+            error = None
+            try:
+                with db.transaction() as c:
+                    inv.delete_item(c, int(rm_id))
+            except inv.InventoryError as e:
+                error = str(e)
+            if error:
+                st.error(error)
+            else:
+                flash(f"Removed item '{names[rm_id]}'.")
+                st.rerun()
