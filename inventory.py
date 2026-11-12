@@ -217,3 +217,38 @@ def delete_sale(conn, sale_id):
         )
     conn.execute("DELETE FROM sale_allocations WHERE sale_id = ?", (sale_id,))
     conn.execute("DELETE FROM sales WHERE sale_id = ?", (sale_id,))
+
+
+# ---------- lookups used to pre-fill the forms ----------
+
+def _distinct(conn, sql):
+    return [r[0] for r in conn.execute(sql).fetchall()]
+
+
+def suppliers(conn):
+    return _distinct(conn, "SELECT DISTINCT supplier FROM purchases WHERE supplier <> '' "
+                           "ORDER BY supplier COLLATE NOCASE")
+
+
+def customers(conn):
+    return _distinct(conn, "SELECT DISTINCT customer FROM sales WHERE customer <> '' "
+                           "ORDER BY customer COLLATE NOCASE")
+
+
+def categories(conn):
+    return _distinct(conn, "SELECT DISTINCT category FROM items WHERE category <> '' "
+                           "ORDER BY category COLLATE NOCASE")
+
+
+def last_purchase(conn, item_id):
+    """Most recent purchase of an item (by date) as a Row with unit_cost, supplier; or None."""
+    return conn.execute(
+        "SELECT unit_cost, supplier FROM purchases WHERE item_id = ? "
+        "ORDER BY date DESC, purchase_id DESC LIMIT 1", (item_id,)).fetchone()
+
+
+def last_sale(conn, item_id):
+    """Most recent sale of an item (by date) as a Row with sale_price, customer; or None."""
+    return conn.execute(
+        "SELECT sale_price, customer FROM sales WHERE item_id = ? "
+        "ORDER BY date DESC, sale_id DESC LIMIT 1", (item_id,)).fetchone()

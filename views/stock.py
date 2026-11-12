@@ -13,7 +13,7 @@ def render():
         batches = inv.batches(c, only_open=True)
 
     if soh.empty:
-        st.info("No items yet. Add items under Manage items first.")
+        st.info("No items yet. Add items on the Add items page first.")
         return
 
     c1, c2, c3 = st.columns(3)

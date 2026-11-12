@@ -6,7 +6,7 @@ import db
 import inventory as inv
 import reports
 from views.common import (current_user, date_range_input, flash, item_label_map, load_items, money,
-                          money_cols, qty_fmt, show_df)
+                          money_cols, pick_or_new, qty_fmt, show_df)
 
 
 def render_form():
@@ -14,7 +14,7 @@ def render_form():
     st.subheader("Log a sale")
     items = load_items()
     if items.empty:
-        st.info("Add an item under **Manage items** first.")
+        st.info("Add an item on the **Add items** page first (sidebar).")
         return
     labels = item_label_map(items)
     units = dict(zip(items["item_id"].astype(int), items["unit"]))
@@ -25,9 +25,16 @@ def render_form():
     c1, c2 = st.columns(2)
     d = c1.date_input("Sale date", value=date.today(), key=f"s_date_{ver}")
     qty = c2.number_input("Quantity sold", min_value=0.0, step=1.0, format="%.3f", key=f"s_qty_{ver}")
+    with db.transaction() as c:
+        last = inv.last_sale(c, item_id)
+        known_customers = inv.customers(c)
+    last_price = float(last["sale_price"]) if last else 0.0
     price = c1.number_input("Selling price per unit (₹)", min_value=0.0, step=1.0, format="%.2f",
-                            key=f"s_price_{ver}")
-    customer = c2.text_input("Customer (optional)", key=f"s_cust_{ver}")
+                            value=last_price, key=f"s_price_{ver}_{item_id}")
+    with c2:
+        customer = pick_or_new("Customer", known_customers, f"s_cust_{ver}", allow_none=True)
+    if last:
+        st.caption(f"Price is pre-filled from your last sale of this item ({money(last_price)}); change it if needed.")
 
     preview, err = None, None
     with db.transaction() as c:

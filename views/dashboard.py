@@ -16,7 +16,7 @@ def render():
         sales = reports.sales_detail(c)
 
     if soh.empty:
-        st.info("Welcome! Add your products under **Manage items** at the bottom, then log purchases and sales.")
+        st.info("Welcome! Add your products on the **Add items** page (sidebar), then log purchases and sales.")
         return
 
     month_start = date.today().replace(day=1).isoformat()

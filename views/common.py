@@ -7,6 +7,7 @@ import streamlit as st
 
 import db
 import inventory as inv
+from choices import CATEGORY_PRESETS, UNIT_PRESETS, merge_choices  # noqa: F401  (re-exported)
 
 
 def money(x):
@@ -75,3 +76,23 @@ def load_items():
 
 def item_label_map(items):
     return {int(r.item_id): f"{r['name']} ({r.unit})" for _, r in items.iterrows()}
+
+
+# ---------- preloaded choices ----------
+
+NONE_CHOICE = "— none —"
+NEW_CHOICE = "➕ Add new…"
+
+def pick_or_new(label, options, key, *, allow_none=False, default=None):
+    """Dropdown pre-loaded with `options`, plus '➕ Add new…' which reveals a text box.
+
+    Returns the chosen (or typed) text; '' when 'none' is chosen.
+    """
+    opts = [NONE_CHOICE] if allow_none else []
+    opts += [o for o in options if o]
+    opts.append(NEW_CHOICE)
+    idx = opts.index(default) if default in opts else 0
+    choice = st.selectbox(label, opts, index=idx, key=key)
+    if choice == NEW_CHOICE:
+        return (st.text_input(f"New {label.lower()}", key=f"{key}_new") or "").strip()
+    return "" if choice == NONE_CHOICE else choice

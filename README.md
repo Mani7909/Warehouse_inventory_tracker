@@ -13,16 +13,25 @@ streamlit run app.py
 Data is stored in `warehouse.db` (SQLite) next to `app.py`. Back up that one file to back up everything.
 Set the `WAREHOUSE_DB` environment variable to keep the database somewhere else.
 
-## Layout (single page, scroll top to bottom)
+## Pages (sidebar)
 
-| Section (one page, top to bottom) | What it does |
+**Warehouse** (one page, scroll top to bottom)
+
+| Section | What it does |
 |---|---|
-| Dashboard | Stock value, profit this month / all time, low-stock alerts, monthly profit chart |
-| Purchases | Log a purchase (date, qty, cost per unit, supplier, invoice). History + delete mistakes |
-| Sales | Log a sale. Live preview shows which batches are used, cost and profit. History + delete |
+| Overview | Stock value, profit this month / all time, low-stock alerts, monthly profit chart |
+| Log a purchase / Log a sale | Side by side. The sale form previews the FIFO batches used, cost and profit |
 | Stock on hand | Qty and value per item, open batches, Excel download |
 | Profit report | Date and item filters, profit by day/week/month and by item, Excel download |
-| Items | Add products, set unit, category and reorder level |
+| History | All purchases and sales, with delete for mistakes |
+
+**Add items**: create products and edit their unit, category and reorder level.
+
+## Pre-filled choices
+
+- Unit and category are dropdowns with common values already loaded. Choose "➕ Add new…" to type your own.
+- Supplier and customer are dropdowns of the names you have used before (or "➕ Add new…").
+- Cost and supplier are pre-filled from your last purchase of that item; selling price from your last sale of it.
 
 ## Rules built in
 
